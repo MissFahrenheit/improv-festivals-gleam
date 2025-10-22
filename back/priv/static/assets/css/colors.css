@@ -1,0 +1,29 @@
+:root {
+    --primary-color: #ff711f;
+    --primary-color-bg: #ffd2b8;
+}
+
+body.orange {
+    --primary-color: #ff711f;
+    --primary-color-bg: #ffd2b8;
+}
+
+body.purple {
+    --primary-color: #7e41f0;
+    --primary-color-bg: #e9e5ff;
+}
+
+body.blue {
+    --primary-color: ##1388e3;
+    --primary-color-bg: #c1e4ff;
+}
+
+body.yellow {
+    --primary-color: #ffe100;
+    --primary-color-bg: #ffe100;
+}
+
+body.green {
+    --primary-color: #42765f;
+    --primary-color-bg: #bff3dc;
+}

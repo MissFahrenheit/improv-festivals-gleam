@@ -1,0 +1,93 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-2HH4pXti.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/fonts/Inter/Inter24pt-Bold.woff": {
+    "file": "assets/Inter24pt-Bold-lR50RSoi.woff",
+    "src": "resources/fonts/Inter/Inter24pt-Bold.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-Bold.woff2": {
+    "file": "assets/Inter24pt-Bold-zwRZDudv.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-Bold.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-BoldItalic.woff": {
+    "file": "assets/Inter24pt-BoldItalic-BQDyqv7p.woff",
+    "src": "resources/fonts/Inter/Inter24pt-BoldItalic.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-BoldItalic.woff2": {
+    "file": "assets/Inter24pt-BoldItalic-Cr1thlMb.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-BoldItalic.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-Italic.woff": {
+    "file": "assets/Inter24pt-Italic-Cp7xAzJM.woff",
+    "src": "resources/fonts/Inter/Inter24pt-Italic.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-Italic.woff2": {
+    "file": "assets/Inter24pt-Italic-DDL7mCfB.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-Italic.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-Light.woff": {
+    "file": "assets/Inter24pt-Light-DMxJ69i0.woff",
+    "src": "resources/fonts/Inter/Inter24pt-Light.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-Light.woff2": {
+    "file": "assets/Inter24pt-Light-CCK2rwRL.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-Light.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-LightItalic.woff": {
+    "file": "assets/Inter24pt-LightItalic-lHu0Q3yH.woff",
+    "src": "resources/fonts/Inter/Inter24pt-LightItalic.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-LightItalic.woff2": {
+    "file": "assets/Inter24pt-LightItalic-DHzrm-rY.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-LightItalic.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-Medium.woff": {
+    "file": "assets/Inter24pt-Medium-DhC-LljY.woff",
+    "src": "resources/fonts/Inter/Inter24pt-Medium.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-Medium.woff2": {
+    "file": "assets/Inter24pt-Medium-BhExgSSR.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-Medium.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-MediumItalic.woff": {
+    "file": "assets/Inter24pt-MediumItalic-DLbTVkCy.woff",
+    "src": "resources/fonts/Inter/Inter24pt-MediumItalic.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-MediumItalic.woff2": {
+    "file": "assets/Inter24pt-MediumItalic-PKvsdnhf.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-MediumItalic.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-Regular.woff": {
+    "file": "assets/Inter24pt-Regular-CsD2Dwqz.woff",
+    "src": "resources/fonts/Inter/Inter24pt-Regular.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-Regular.woff2": {
+    "file": "assets/Inter24pt-Regular-qvK65rjz.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-Regular.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-SemiBold.woff": {
+    "file": "assets/Inter24pt-SemiBold-Bebkq8sb.woff",
+    "src": "resources/fonts/Inter/Inter24pt-SemiBold.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-SemiBold.woff2": {
+    "file": "assets/Inter24pt-SemiBold-KBifbP54.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-SemiBold.woff2"
+  },
+  "resources/fonts/Inter/Inter24pt-SemiBoldItalic.woff": {
+    "file": "assets/Inter24pt-SemiBoldItalic-DBZiGW-M.woff",
+    "src": "resources/fonts/Inter/Inter24pt-SemiBoldItalic.woff"
+  },
+  "resources/fonts/Inter/Inter24pt-SemiBoldItalic.woff2": {
+    "file": "assets/Inter24pt-SemiBoldItalic-Bwo8gK01.woff2",
+    "src": "resources/fonts/Inter/Inter24pt-SemiBoldItalic.woff2"
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-C1liytcp.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}

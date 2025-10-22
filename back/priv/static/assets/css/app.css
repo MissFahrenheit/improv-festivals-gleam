@@ -1,0 +1,194 @@
+@import "./spacing.css";
+@import "./flex.css";
+@import "./fonts.css";
+
+/* Include this if you want to play around with some other colors */
+/*@import "./colors.css";*/
+
+/* Include this if you intend to use the partials/skeleton.blade.php */
+/*@import "./skeleton.css";*/
+
+:root {
+    --primary-color: #7e41f0;
+    --primary-color-bg: #e9e5ff;
+    --primary-font-family: "Inter 24pt", sans-serif;
+    --font-color: #3d395b;
+    --secondary-font-color: #73727b;
+    --light-gray: #f5f5f5;
+}
+
+body {
+    font-family: var(--primary-font-family);
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 400;
+    background-color: var(--light-gray);
+    color: var(--font-color);
+    -webkit-font-smoothing: antialiased;
+}
+
+main {
+    min-height: 60vh;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6,
+strong {
+    font-weight: 600;
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+p,
+small {
+    line-height: 1.6;
+    color: var(--secondary-font-color);
+}
+
+a {
+    color: inherit;
+}
+a:hover {
+    color: var(--primary-color);
+}
+
+button {
+    box-shadow: none;
+    cursor: pointer;
+    font-family: var(--primary-font-family);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.pill {
+    border-radius: 18px;
+    font-weight: 500;
+}
+
+nav {
+    button {
+        background-color: #fff;
+        border: 0;
+        font-size: 0.875rem;
+        border-radius: 18px;
+        font-weight: 500;
+        border: 1px solid transparent;
+    }
+
+    button.active {
+        border-color: var(--primary-color);
+        background-color: var(--primary-color-bg);
+    }
+
+    button:not(.active):hover {
+        background-color: var(--light-gray);
+    }
+}
+
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+
+.grid {
+    display: grid;
+    max-width: 1200px;
+    grid-template-columns: repeat(1, 1fr);
+
+    .grid-item {
+        min-width: 0;
+    }
+}
+
+.card {
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    height: calc(100% - 2 * (var(--spacer-4)));
+}
+
+.date-img {
+    height: 50px;
+
+    > div {
+        max-width: calc(100% - 100px);
+    }
+
+    span {
+        font-size: 1.125rem;
+        font-weight: 700;
+        /*white-space: nowrap;*/
+    }
+
+    svg {
+        width: 22px;
+        height: 22px;
+        fill: var(--primary-color);
+    }
+
+    img.festival-image {
+        display: block;
+        width: auto;
+        border-radius: 9px;
+        min-width: 0;
+        height: auto;
+        max-height: 50px;
+    }
+}
+
+.info-row {
+    color: var(--secondary-font-color);
+
+    svg {
+        fill: #b9b8c3;
+    }
+
+    a {
+        overflow-wrap: anywhere;
+    }
+}
+
+.location {
+    background-color: var(--primary-color-bg);
+
+    svg {
+        fill: var(--primary-color);
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+    nav {
+        border-radius: 24px;
+        background-color: #fff;
+
+        button {
+            font-size: 1rem;
+        }
+
+        button.active {
+            border-color: transparent;
+        }
+
+        button:not(.active):hover {
+            background-color: var(--light-gray);
+            border-color: var(--light-gray);
+        }
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
