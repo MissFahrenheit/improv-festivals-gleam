@@ -1,10 +1,9 @@
 import back_types.{
-  type GeneratorError, FetchGoogleSpreadsheetError, ParseJSONError,
+  type Config, type GeneratorError, FetchGoogleSpreadsheetError, ParseJSONError,
 }
 import birl
 import birl/duration
 import cache
-import envoy
 import festival_builder
 import gleam/dict
 import gleam/dynamic/decode
@@ -30,31 +29,28 @@ pub fn sheet_title_to_continent(title: String) -> Continent {
 }
 
 pub fn sheet_to_festivals(
+  config: Config,
   sheet_title: String,
-  args: List(String),
   continents: List(Continent),
 ) -> Result(List(Festival), GeneratorError) {
-  let assert Ok(google_developer_key) = envoy.get("GOOGLE_DEVELOPER_KEY")
-  let assert Ok(spreadsheet_id) = envoy.get("SPREADSHEET_ID")
-  let assert Ok(google_api_url) = envoy.get("GOOGLE_API_URL")
   let encoded_sheet_title = uri.percent_encode(sheet_title)
   let sheet_url =
-    google_api_url
-    <> spreadsheet_id
+    config.google_api_url
+    <> config.spreadsheet_id
     <> "/values/"
     <> encoded_sheet_title
     <> "?key="
-    <> google_developer_key
+    <> config.google_developer_key
 
   let slugified_sheet_title = glugify.slugify(sheet_title)
 
   let filepath =
-    helpers.get_resource_dir()
+    config.resources_dir
     <> "/improv_festivals-"
     <> slugified_sheet_title
     <> ".json"
 
-  let data_result = case list.contains(args, "--use-cache") {
+  let data_result = case config.use_cache {
     True -> cache.get_cached_data(filepath)
     False ->
       result.try(fetch_spreadsheet_data(sheet_url), cache.save_data_to_cache(
@@ -68,7 +64,7 @@ pub fn sheet_to_festivals(
 
   let assert Ok(first_row) = list.first(data_list)
   let column_indexes = define_columns(first_row)
-  let cached_images = images.get_cached_images()
+  let cached_images = images.get_cached_images(config)
 
   let images_and_festivals =
     list.drop(data_list, 1)
@@ -99,7 +95,7 @@ pub fn sheet_to_festivals(
     images_and_festivals.0
     |> images.cached_images_to_json
     |> json.to_string
-    |> cache.save_data_to_cache(helpers.get_images_json_filepath())
+    |> cache.save_data_to_cache(helpers.get_images_json_filepath(config))
 
   images_and_festivals.1
   |> list.sort(festival_builder.sort_festivals_by_year_month)
@@ -134,22 +130,27 @@ fn fetch_spreadsheet_data(sheet_url) -> Result(String, GeneratorError) {
   }
 }
 
-pub fn fetch_spreadsheet_info() {
-  let assert Ok(google_developer_key) = envoy.get("GOOGLE_DEVELOPER_KEY")
-  let assert Ok(spreadsheet_id) = envoy.get("SPREADSHEET_ID")
-  let assert Ok(google_api_url) = envoy.get("GOOGLE_API_URL")
+pub fn fetch_spreadsheet_info(config: Config) -> Result(String, GeneratorError) {
   let spreadsheet_url =
-    google_api_url <> spreadsheet_id <> "?key=" <> google_developer_key
+    config.google_api_url
+    <> config.spreadsheet_id
+    <> "?key="
+    <> config.google_developer_key
 
-  let assert Ok(req) = request.to(spreadsheet_url)
+  use req <- result.try(
+    request.to(spreadsheet_url)
+    |> result.replace_error(FetchGoogleSpreadsheetError(
+      "Error in fetching Google Spreadsheet data",
+    )),
+  )
+  use resp <- result.try(
+    httpc.send(req)
+    |> result.replace_error(FetchGoogleSpreadsheetError(
+      "Error in fetching Google Spreadsheet data",
+    )),
+  )
 
-  case httpc.send(req) {
-    Error(_) ->
-      Error(FetchGoogleSpreadsheetError(
-        "Error in fetching Google Spreadsheet data",
-      ))
-    Ok(resp) -> Ok(resp.body)
-  }
+  Ok(resp.body)
 }
 
 pub fn sheet_titles_decoder(json_string: String) {

@@ -1,6 +1,6 @@
 import back_types.{
-  type GeneratorError, FetchFacebookImageError, FetchWebsiteImageError,
-  GetFacebookIdError,
+  type Config, type GeneratorError, FetchFacebookImageError,
+  FetchWebsiteImageError, GetFacebookIdError,
 }
 import cache
 import gleam/dynamic/decode
@@ -18,8 +18,8 @@ pub type CachedImage {
   CachedImage(webpage: String, image_src: String)
 }
 
-pub fn get_cached_images() {
-  case cache.get_cached_data(helpers.get_images_json_filepath()) {
+pub fn get_cached_images(config: Config) {
+  case cache.get_cached_data(helpers.get_images_json_filepath(config)) {
     Error(_) -> []
     Ok(images_json) -> {
       case json.parse(images_json, decode.list(cached_image_decoder())) {
