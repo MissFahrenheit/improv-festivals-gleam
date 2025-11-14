@@ -316,9 +316,7 @@ fn header() -> element.Element(types.Msg) {
       html.text("This "),
       html.a(
         [
-          attr.href(
-            "https://github.com/MissFahrenheit/improv-festivals-worldwide",
-          ),
+          attr.href("https://github.com/MissFahrenheit/improv-festivals-gleam"),
           attr.target("_blank"),
           attr.title("Improv Festivals Worldwide Project Github page"),
         ],
@@ -337,9 +335,7 @@ fn footer() -> element.Element(types.Msg) {
       html.text("This is an open-source project. Find it on "),
       html.a(
         [
-          attr.href(
-            "https://github.com/MissFahrenheit/improv-festivals-worldwide",
-          ),
+          attr.href("https://github.com/MissFahrenheit/improv-festivals-gleam"),
           attr.target("_blank"),
           attr.title("Improv Festivals Worldwide Project Github page"),
         ],
