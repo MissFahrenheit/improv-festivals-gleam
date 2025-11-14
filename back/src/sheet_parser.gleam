@@ -17,16 +17,13 @@ import gleam/result
 import gleam/string
 import gleam/uri
 import glugify
+import helpers
 import images
 import types.{type Continent, type Festival, Continent, Festival}
 
 type ColumnIndex {
   ColumnIndex(id: String, position: Int)
 }
-
-const sheet_file_src = "./resources/"
-
-pub const info_filepath = "./resources/improv_festivals-info.json"
 
 pub fn sheet_title_to_continent(title: String) -> Continent {
   Continent(id: glugify.slugify(title), label: title)
@@ -52,7 +49,10 @@ pub fn sheet_to_festivals(
   let slugified_sheet_title = glugify.slugify(sheet_title)
 
   let filepath =
-    sheet_file_src <> "improv_festivals-" <> slugified_sheet_title <> ".json"
+    helpers.get_resource_dir()
+    <> "/improv_festivals-"
+    <> slugified_sheet_title
+    <> ".json"
 
   let data_result = case list.contains(args, "--use-cache") {
     True -> cache.get_cached_data(filepath)
@@ -99,7 +99,7 @@ pub fn sheet_to_festivals(
     images_and_festivals.0
     |> images.cached_images_to_json
     |> json.to_string
-    |> cache.save_data_to_cache(images.image_file_src)
+    |> cache.save_data_to_cache(helpers.get_images_json_filepath())
 
   images_and_festivals.1
   |> list.sort(festival_builder.sort_festivals_by_year_month)

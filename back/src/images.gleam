@@ -12,15 +12,14 @@ import gleam/option
 import gleam/regexp
 import gleam/result
 import gleam/string
+import helpers
 
 pub type CachedImage {
   CachedImage(webpage: String, image_src: String)
 }
 
-pub const image_file_src = "./resources/images.json"
-
 pub fn get_cached_images() {
-  case cache.get_cached_data(image_file_src) {
+  case cache.get_cached_data(helpers.get_images_json_filepath()) {
     Error(_) -> []
     Ok(images_json) -> {
       case json.parse(images_json, decode.list(cached_image_decoder())) {

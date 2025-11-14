@@ -6,6 +6,7 @@ import festivals_html
 import gleam/io
 import gleam/list
 import gleam/result
+import helpers
 import lustre/element
 import sheet_parser
 import simplifile
@@ -13,12 +14,23 @@ import simplifile
 pub fn main() -> Nil {
   let args = argv.load().arguments
 
+  let app_url = result.unwrap(envoy.get("APP_URL"), "/")
+  result.lazy_unwrap(
+    simplifile.create_directory_all(helpers.get_output_dir()),
+    fn() { Nil },
+  )
+  result.lazy_unwrap(
+    simplifile.create_directory_all(helpers.get_resource_dir()),
+    fn() { Nil },
+  )
+  helpers.copy_static_assets()
+
   let data_result = case list.contains(args, "--use-cache") {
-    True -> cache.get_cached_data(sheet_parser.info_filepath)
+    True -> cache.get_cached_data(helpers.get_sheet_info_filepath())
     False ->
       result.try(
         sheet_parser.fetch_spreadsheet_info(),
-        cache.save_data_to_cache(_, sheet_parser.info_filepath),
+        cache.save_data_to_cache(_, helpers.get_sheet_info_filepath()),
       )
   }
 
@@ -27,8 +39,6 @@ pub fn main() -> Nil {
     use sheets_titles <- result.try(sheet_parser.sheet_titles_decoder(
       json_sheets_data,
     ))
-
-    let app_url = result.unwrap(envoy.get("APP_URL"), "/")
 
     let continents =
       sheets_titles
@@ -42,8 +52,8 @@ pub fn main() -> Nil {
     })
     |> festivals_html.festival_to_html(continents, app_url)
     |> element.to_document_string
-    |> simplifile.write("./priv/index.html", _)
-    |> result.replace_error(HTMLFileWriteError("ff"))
+    |> simplifile.write(helpers.get_output_dir() <> "/index.html", _)
+    |> result.replace_error(HTMLFileWriteError("Could not write HTML file"))
   }
 
   case res {
