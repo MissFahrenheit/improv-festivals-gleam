@@ -51,14 +51,15 @@ pub fn main() -> Nil {
   case res {
     Error(msg) -> {
       io.println_error(msg.msg)
-      Nil
+      // Exit non-zero so cron and other callers can tell a failed run apart.
+      halt(1)
     }
-    Ok(_) -> {
-      io.println("Finished successfully")
-      Nil
-    }
+    Ok(_) -> io.println("Finished successfully")
   }
 }
+
+@external(erlang, "erlang", "halt")
+fn halt(status: Int) -> Nil
 
 fn load_env(args: List(String)) -> Result(Config, GeneratorError) {
   {
