@@ -3,6 +3,7 @@ import back_types.{
   FetchWebsiteImageError, GetFacebookIdError,
 }
 import cache
+import gleam/bool
 import gleam/dynamic/decode
 import gleam/http/request
 import gleam/httpc
@@ -30,6 +31,8 @@ pub fn get_cached_images(config: Config) {
   }
 }
 
+const timeout_ms = 10_000
+
 fn fetch_image(webpage: String, facebook: String) -> String {
   fetch_from_webpage(webpage)
   |> result.lazy_or(fn() { fetch_from_facebook(facebook) })
@@ -46,6 +49,10 @@ fn extract_facebook_id(facebook_url: String) -> Result(String, GeneratorError) {
 }
 
 fn fetch_from_facebook(facebook_url: String) -> Result(String, GeneratorError) {
+  use <- bool.guard(
+    facebook_url == "",
+    Error(FetchFacebookImageError("No Facebook page")),
+  )
   use facebook_id <- result.try(extract_facebook_id(facebook_url))
   let fb_request_url =
     "https://graph.facebook.com/" <> facebook_id <> "/picture?type=large"
@@ -57,7 +64,9 @@ fn fetch_from_facebook(facebook_url: String) -> Result(String, GeneratorError) {
     )),
   )
   use resp <- result.try(
-    httpc.send(req)
+    httpc.configure()
+    |> httpc.timeout(timeout_ms)
+    |> httpc.dispatch(req)
     |> result.replace_error(FetchFacebookImageError(
       "Could not fetch image from Facebook",
     )),
@@ -69,6 +78,7 @@ fn fetch_from_facebook(facebook_url: String) -> Result(String, GeneratorError) {
 }
 
 fn fetch_from_webpage(webpage: String) -> Result(String, GeneratorError) {
+  use <- bool.guard(webpage == "", Error(FetchWebsiteImageError("No website")))
   use req <- result.try(
     request.to(webpage)
     |> result.replace_error(FetchWebsiteImageError("Could not find website")),
@@ -76,6 +86,7 @@ fn fetch_from_webpage(webpage: String) -> Result(String, GeneratorError) {
   use resp <- result.try(
     httpc.configure()
     |> httpc.follow_redirects(True)
+    |> httpc.timeout(timeout_ms)
     |> httpc.dispatch(req)
     |> result.replace_error(FetchWebsiteImageError(
       "Could not fetch image from website",
@@ -104,19 +115,28 @@ pub fn get_image_and_cache(
   webpage: String,
   facebook: String,
 ) -> #(List(CachedImage), String) {
+  // The cache is keyed by website, or by Facebook page when there is no
+  // website. A festival with neither gets no image and no cache entry, so it
+  // can't pick up another festival's picture.
+  let cache_key = case webpage {
+    "" -> facebook
+    _ -> webpage
+  }
   case
+    cache_key,
     list.find(cached_images, fn(cached_image) {
-      cached_image.webpage == webpage
+      cached_image.webpage == cache_key
     })
   {
-    Error(_) -> {
+    "", _ -> #(cached_images, "")
+    _, Ok(cached_image) -> #(cached_images, cached_image.image_src)
+    _, Error(_) -> {
       let image_src = fetch_image(webpage, facebook)
       let updated_cache =
-        list.append(cached_images, [CachedImage(webpage:, image_src:)])
+        list.append(cached_images, [
+          CachedImage(webpage: cache_key, image_src:),
+        ])
       #(updated_cache, image_src)
-    }
-    Ok(cached_image) -> {
-      #(cached_images, cached_image.image_src)
     }
   }
 }

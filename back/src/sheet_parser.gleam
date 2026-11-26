@@ -8,6 +8,7 @@ import festival_builder
 import gleam/dict
 import gleam/dynamic/decode
 import gleam/http/request
+import gleam/http/response
 import gleam/httpc
 import gleam/int
 import gleam/json
@@ -62,7 +63,12 @@ pub fn sheet_to_festivals(
 
   use data_list <- result.try(sheet_values_decoder(json_data))
 
-  let assert Ok(first_row) = list.first(data_list)
+  use first_row <- result.try(
+    list.first(data_list)
+    |> result.replace_error(ParseJSONError(
+      "Sheet " <> sheet_title <> " is empty",
+    )),
+  )
   let column_indexes = define_columns(first_row)
   let cached_images = images.get_cached_images(config)
 
@@ -119,18 +125,36 @@ fn data_to_key_value_list(
 }
 
 fn fetch_spreadsheet_data(sheet_url) -> Result(String, GeneratorError) {
-  let assert Ok(req) = request.to(sheet_url)
+  use req <- result.try(
+    request.to(sheet_url)
+    |> result.replace_error(FetchGoogleSpreadsheetError(
+      "Invalid Google Spreadsheet URL",
+    )),
+  )
+  use resp <- result.try(
+    httpc.send(req)
+    |> result.replace_error(FetchGoogleSpreadsheetError(
+      "Error in fetching Google Spreadsheet data",
+    )),
+  )
+  ok_body(resp)
+}
 
-  case httpc.send(req) {
-    Error(_) ->
+/// Only a 200 response holds sheet data. Anything else (bad key, quota,
+/// renamed tab) is an error, so it never overwrites the cached copy.
+fn ok_body(resp: response.Response(String)) -> Result(String, GeneratorError) {
+  case resp.status {
+    200 -> Ok(resp.body)
+    status ->
       Error(FetchGoogleSpreadsheetError(
-        "Error in fetching Google Spreadsheet data",
+        "Google Sheets API answered with status " <> int.to_string(status),
       ))
-    Ok(resp) -> Ok(resp.body)
   }
 }
 
-pub fn fetch_spreadsheet_info(config: Config) -> Result(String, GeneratorError) {
+pub fn fetch_spreadsheet_info(
+  config: Config,
+) -> Result(String, GeneratorError) {
   let spreadsheet_url =
     config.google_api_url
     <> config.spreadsheet_id
@@ -150,7 +174,7 @@ pub fn fetch_spreadsheet_info(config: Config) -> Result(String, GeneratorError) 
     )),
   )
 
-  Ok(resp.body)
+  ok_body(resp)
 }
 
 pub fn sheet_titles_decoder(json_string: String) {
@@ -198,9 +222,32 @@ fn allowed_column_names() -> List(String) {
 }
 
 fn define_columns(first_row: List(String)) -> List(ColumnIndex) {
-  list.map(first_row, glugify.slugify)
-  |> list.index_map(fn(name, index) { ColumnIndex(id: name, position: index) })
-  |> list.filter(fn(column_index) {
-    list.contains(allowed_column_names(), column_index.id)
+  let allowed = allowed_column_names()
+  let columns =
+    list.map(first_row, glugify.slugify)
+    |> list.index_map(fn(name, index) { ColumnIndex(id: name, position: index) })
+  let name_position = find_name_column(columns)
+
+  columns
+  |> list.map(fn(column) {
+    case column.position == name_position {
+      True -> ColumnIndex(..column, id: "festival-name")
+      False -> column
+    }
   })
+  |> list.filter(fn(column_index) { list.contains(allowed, column_index.id) })
+}
+
+/// The name column's header differs between tabs ("Festival Name",
+/// "Festival Name (alphabetized)", "•Festival Name ", or a stray character
+/// like "`"), but it is always the first column.
+fn find_name_column(columns: List(ColumnIndex)) -> Int {
+  case
+    list.find(columns, fn(column) {
+      string.contains(column.id, "festival-name")
+    })
+  {
+    Ok(column) -> column.position
+    Error(_) -> 0
+  }
 }
