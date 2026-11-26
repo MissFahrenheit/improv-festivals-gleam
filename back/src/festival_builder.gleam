@@ -3,6 +3,7 @@ import birl/duration
 import gleam/dict
 import gleam/int
 import gleam/list
+import gleam/option
 import gleam/order
 import gleam/regexp
 import gleam/result
@@ -24,11 +25,12 @@ pub fn map_data_list_to_festival(
 ) -> Festival {
   let assert Ok(continent) =
     list.find(continents, fn(continent) { continent.id == continent_id })
-  let name = result.unwrap(dict.get(dict_row, "festival-name"), "")
+  let name = string.trim(result.unwrap(dict.get(dict_row, "festival-name"), ""))
   let city = result.unwrap(dict.get(dict_row, "city"), "")
   let country = result.unwrap(dict.get(dict_row, "country"), "")
   let languages = result.unwrap(dict.get(dict_row, "language-s"), "")
-  let facebook = result.unwrap(dict.get(dict_row, "facebook"), "")
+  let facebook =
+    normalize_url(result.unwrap(dict.get(dict_row, "facebook"), ""))
   let webpage = normalize_url(result.unwrap(dict.get(dict_row, "webpage"), ""))
 
   let festival =
@@ -56,9 +58,26 @@ fn update_festival_dates(
   let current_year = birl.get_day(now).year
   let next_year = birl.get_day(birl.add(now, duration.years(1))).year
 
-  let assert Ok(month) = dict.get(dict_row, "mm")
-  let assert Ok(month_int) = int.parse(month)
+  // A row with a missing or non-numeric month gets no date and is dropped
+  // later, instead of crashing the whole run.
+  let month_int =
+    dict.get(dict_row, "mm")
+    |> result.try(fn(month) { int.parse(string.trim(month)) })
+    |> result.unwrap(0)
+  case month_int >= 1 && month_int <= 12 {
+    False -> festival
+    True ->
+      set_festival_dates(dict_row, festival, month_int, current_year, next_year)
+  }
+}
 
+fn set_festival_dates(
+  dict_row: dict.Dict(String, String),
+  festival: Festival,
+  month_int: Int,
+  current_year: Int,
+  next_year: Int,
+) -> Festival {
   let current_year_date = extract_date_string_by_year(dict_row, current_year)
   let next_year_date = extract_date_string_by_year(dict_row, next_year)
 
@@ -81,16 +100,19 @@ fn update_festival_dates(
   )
 }
 
+/// "YYYY-MM", zero-padded so that sorting the strings sorts by date
+/// ("2027-02" before "2027-10").
 pub fn get_yearmonth(
   month: Int,
   current_year: Int,
   next_year: Int,
   festival_year_case: YearCase,
 ) -> String {
+  let padded_month = string.pad_start(int.to_string(month), 2, "0")
   case festival_year_case {
     types.Empty -> ""
-    types.ThisYear -> int.to_string(current_year) <> "-" <> int.to_string(month)
-    types.NextYear -> int.to_string(next_year) <> "-" <> int.to_string(month)
+    types.ThisYear -> int.to_string(current_year) <> "-" <> padded_month
+    types.NextYear -> int.to_string(next_year) <> "-" <> padded_month
   }
 }
 
@@ -143,19 +165,29 @@ fn extract_date_string_by_year(
   }
 }
 
+/// Adds https:// when the sheet has a bare domain. Returns "" for an empty
+/// cell or anything that isn't a web address, so only http(s) links reach
+/// the page.
 fn normalize_url(webpage: String) -> String {
   let trimmed_webpage = string.trim(webpage)
 
-  let assert Ok(regex) = regexp.from_string("^https?://")
+  let assert Ok(regex) =
+    regexp.compile(
+      "^https?://",
+      regexp.Options(case_insensitive: True, multi_line: False),
+    )
 
   let url = case regexp.check(with: regex, content: trimmed_webpage) {
     True -> trimmed_webpage
-    False -> {
-      "https://" <> trimmed_webpage
-    }
+    False -> "https://" <> trimmed_webpage
   }
-  case uri.parse(url) {
-    Ok(_) -> url
-    Error(_) -> ""
+  case trimmed_webpage, uri.parse(url) {
+    "", _ -> ""
+    _, Ok(uri.Uri(host: option.Some(host), ..)) ->
+      case string.contains(host, ".") && !string.contains(host, " ") {
+        True -> url
+        False -> ""
+      }
+    _, _ -> ""
   }
 }

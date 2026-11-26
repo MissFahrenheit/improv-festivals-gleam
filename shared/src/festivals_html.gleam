@@ -197,14 +197,48 @@ fn facebook_section(festival: Festival) -> Element(d) {
       ),
     ])
 
-  let empty_div = html.div([], [])
-
+  // festival.facebook is already normalized to an http(s) URL or "".
   case
     string.contains(festival.facebook, "facebook.com"),
     string.contains(festival.facebook, "fb.com")
   {
-    False, False -> empty_div
+    False, False -> element.none()
     _, _ -> facebook_div
+  }
+}
+
+fn festival_image(festival: Festival) -> Element(d) {
+  case festival.image {
+    "" -> element.none()
+    image ->
+      html.img([
+        attr.class("festival-image flex-shrink-1"),
+        attr.src(image),
+        attr.alt(festival.name),
+        attr.attribute("loading", "lazy"),
+        // Cached picture links expire (Facebook's CDN especially); hide the
+        // picture instead of showing a broken-image icon.
+        attr.attribute("onerror", "this.style.display='none'"),
+      ])
+  }
+}
+
+fn website_section(festival: Festival) -> Element(d) {
+  case festival.webpage {
+    "" -> element.none()
+    webpage ->
+      html.div([attr.class("flex align-items-center mb-4 info-row")], [
+        icons.get("globe"),
+        html.a(
+          [
+            attr.class("ml-2"),
+            attr.href(webpage),
+            attr.target("_blank"),
+            attr.title(festival.name <> " website"),
+          ],
+          [html.text(webpage)],
+        ),
+      ])
   }
 }
 
@@ -235,10 +269,7 @@ fn festival_card(festival: Festival) -> element.Element(a) {
               ]),
             ],
           ),
-          html.img([
-            attr.class("festival-image flex-shrink-1"),
-            attr.src(festival.image),
-          ]),
+          festival_image(festival),
         ],
       ),
       html.h2([attr.class("mt-1 mb-3")], [html.text(festival.name)]),
@@ -247,18 +278,7 @@ fn festival_card(festival: Festival) -> element.Element(a) {
         html.span([attr.class("ml-2")], [html.text(festival.languages)]),
       ]),
       facebook_section(festival),
-      html.div([attr.class("flex align-items-center mb-4 info-row")], [
-        icons.get("globe"),
-        html.a(
-          [
-            attr.class("ml-2"),
-            attr.href(festival.webpage),
-            attr.target("_blank"),
-            attr.title(festival.name <> " website"),
-          ],
-          [html.text(festival.webpage)],
-        ),
-      ]),
+      website_section(festival),
       html.div([attr.class("flex align-items-center justify-content-end")], [
         html.div(
           [attr.class("flex align-items-center px-3 py-2 pill location")],
@@ -394,6 +414,9 @@ fn model_to_json(
     #("continents", continents_to_json(continents)),
   ])
   |> json.to_string
+  // The JSON sits inside a <script> tag, so a "</script>" typed into the
+  // sheet would end the tag early. \u003c is the same "<" to the JSON parser.
+  |> string.replace("<", "\\u003c")
 }
 
 fn festivals_to_json(festivals: List(Festival)) -> json.Json {

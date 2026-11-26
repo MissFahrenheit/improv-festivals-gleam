@@ -5,7 +5,7 @@ import gleam/result
 import lustre
 import plinth/browser/document
 import plinth/browser/element as plinth_element
-import types.{type Continent, type Festival}
+import types
 
 pub fn main() {
   let assert Ok(json) =
@@ -15,12 +15,13 @@ pub fn main() {
   let assert Ok(model) = json.parse(json, festival_shared.model_decoder())
   let app = lustre.simple(init, update, festivals_html.view)
 
-  let assert Ok(_) =
-    lustre.start(app, "#app", #(model.festivals, model.continents))
+  let assert Ok(_) = lustre.start(app, "#app", model)
 }
 
-fn init(data: #(List(Festival), List(Continent))) {
-  types.Model(active_tab: "europe", festivals: data.0, continents: data.1)
+// Start on the tab the server rendered as active (the first sheet tab), so
+// the page doesn't jump when the script takes over.
+fn init(model: types.Model) -> types.Model {
+  model
 }
 
 fn update(model: types.Model, msg: types.Msg) -> types.Model {
