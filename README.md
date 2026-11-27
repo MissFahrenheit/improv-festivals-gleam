@@ -41,8 +41,11 @@ folder; a web server serves that folder. Nothing runs between updates.
 2. Copy the release over:
 
    ```bash
-   rsync -az --delete back/build/erlang-shipment/ you@vps:/opt/improv-festivals/
+   rsync -az --delete --exclude .env back/build/erlang-shipment/ you@vps:/opt/improv-festivals/
    ```
+
+   `--delete` removes files from the old release, and `--exclude .env` keeps
+   it from also deleting the `.env` you create in the next step.
 
 3. On the VPS, create `/opt/improv-festivals/.env` with the
    [environment variables](#environment-variables), and make it readable only
