@@ -6,9 +6,9 @@ import back_types.{
 import cache
 import envoy
 import festivals_html
+import gleam/erlang/application
 import gleam/io
 import gleam/list
-import gleam/option
 import gleam/result
 import gleam/string
 import helpers
@@ -31,7 +31,7 @@ pub fn main() -> Nil {
           cache.save_data_to_cache(_, helpers.get_sheet_info_filepath(config)),
         )
     })
-    use analytics_snippet <- result.try(load_analytics_snippet(config))
+    use analytics_snippet <- result.try(load_analytics_snippet())
     use sheets_titles <- result.try(sheet_parser.sheet_titles_decoder(
       json_sheets_data,
     ))
@@ -74,11 +74,6 @@ fn load_env(args: List(String)) -> Result(Config, GeneratorError) {
     use google_api_url <- result.try(envoy.get("GOOGLE_API_URL"))
     use google_developer_key <- result.try(envoy.get("GOOGLE_DEVELOPER_KEY"))
     use spreadsheet_id <- result.try(envoy.get("SPREADSHEET_ID"))
-    // Optional: path to an HTML file with an analytics snippet (any provider).
-    let analytics_snippet_file = case envoy.get("ANALYTICS_SNIPPET_FILE") {
-      Ok("") | Error(_) -> option.None
-      Ok(path) -> option.Some(path)
-    }
     Ok(Config(
       use_cache: list.contains(args, "--use-cache"),
       refresh_images: list.contains(args, "--refresh-images"),
@@ -89,23 +84,23 @@ fn load_env(args: List(String)) -> Result(Config, GeneratorError) {
       resources_dir:,
       output_dir:,
       static_dir:,
-      analytics_snippet_file:,
     ))
   }
   |> result.replace_error(FailedToLoadConfig("Environment variable not found"))
 }
 
-/// Reads the analytics snippet named by ANALYTICS_SNIPPET_FILE, if any.
-/// Fails when the variable is set but the file can't be read, so a typo
-/// doesn't silently turn analytics off.
-fn load_analytics_snippet(config: Config) -> Result(String, GeneratorError) {
-  case config.analytics_snippet_file {
-    option.None -> Ok("")
-    option.Some(path) ->
-      simplifile.read(path)
-      |> result.replace_error(FailedToLoadConfig(
-        "Could not read analytics snippet file: " <> path,
-      ))
+/// Reads `priv/analytics.html` if it exists. Leaving the file out builds the
+/// site without analytics, so forks don't track anything.
+fn load_analytics_snippet() -> Result(String, GeneratorError) {
+  let path = case application.priv_directory("back") {
+    Ok(priv) -> priv <> "/analytics.html"
+    Error(_) -> "priv/analytics.html"
+  }
+  case simplifile.read(path) {
+    Ok(snippet) -> Ok(snippet)
+    Error(simplifile.Enoent) -> Ok("")
+    Error(_) ->
+      Error(FailedToLoadConfig("Could not read analytics snippet: " <> path))
   }
 }
 

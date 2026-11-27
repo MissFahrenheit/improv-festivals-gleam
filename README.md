@@ -56,8 +56,6 @@ folder; a web server serves that folder. Nothing runs between updates.
    export RESOURCES_DIR="/var/lib/improv-festivals"
    export OUTPUT_DIR="/var/www/improv-festivals"
    export STATIC_DIR="/opt/improv-festivals/back/priv/static"
-   # optional, see Analytics below
-   export ANALYTICS_SNIPPET_FILE="/etc/improv-festivals/analytics.html"
    ```
 
 4. Add the cron job with `crontab -e`:
@@ -91,8 +89,8 @@ To deploy a code change, build a new release and repeat step 2.
 
 ### Environment variables
 
-All are required except `ANALYTICS_SNIPPET_FILE`; the generator exits with
-`Environment variable not found` if a required one is missing.
+All are required; the generator exits with `Environment variable not found`
+if any is missing.
 
 | Variable | What it is |
 | --- | --- |
@@ -103,16 +101,15 @@ All are required except `ANALYTICS_SNIPPET_FILE`; the generator exits with
 | `RESOURCES_DIR` | Where the cache is kept: the sheet data (`improv_festivals-*.json`) and the festival images (`images.json`). Created if missing. |
 | `OUTPUT_DIR` | Where the site is written: `index.html` and `static/`. Created if missing. |
 | `STATIC_DIR` | The static assets to copy into `OUTPUT_DIR/static`: the release's `back/priv/static`. |
-| `ANALYTICS_SNIPPET_FILE` | Optional. Path to an HTML file with an analytics snippet; see [Analytics](#analytics). Unset means no analytics. |
 
 ### Analytics
 
 The generated site has no analytics by default. To add your own (Plausible,
-Umami, Google Analytics, …), save the snippet your provider gives you in an
-HTML file and point `ANALYTICS_SNIPPET_FILE` at it. Its contents are inserted
-as-is just before `</head>`. If the variable is set but the file can't be
-read, the run fails. Keep the file outside the release folder, since step 2 of
-the deploy replaces that folder.
+Umami, Google Analytics, …), save the snippet your provider gives you in a
+file at `back/priv/analytics.html` before you build the release. Its contents
+are inserted as-is just before `</head>`. The file is gitignored, so it stays
+out of the repository, and `gleam export erlang-shipment` copies it into the
+release. It isn't published with the site's static files.
 
 ### Command-line flags
 

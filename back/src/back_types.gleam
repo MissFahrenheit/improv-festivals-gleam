@@ -1,5 +1,3 @@
-import gleam/option.{type Option}
-
 pub type GeneratorError {
   FetchGoogleSpreadsheetError(msg: String)
   FetchCachedDataError(msg: String)
@@ -25,6 +23,5 @@ pub type Config {
     resources_dir: String,
     output_dir: String,
     static_dir: String,
-    analytics_snippet_file: Option(String),
   )
 }
