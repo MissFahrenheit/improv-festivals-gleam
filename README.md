@@ -22,4 +22,13 @@ RESOURCES_DIR="/path/to/resources" \
 OUTPUT_DIR="/path/to/output" \
 # this is where we store our static assets
 STATIC_DIR="path/to/erlang-shipment/back/priv/static" \
-/path/to/erlang-shipment/entrypoint.sh run```
+# optional: path to an HTML file with your analytics snippet (see below)
+ANALYTICS_SNIPPET_FILE="" \
+/path/to/erlang-shipment/entrypoint.sh run
+```
+
+# Analytics (optional)
+The generated site has no analytics by default. To add your own (Plausible,
+Umami, Google Analytics, …), save the snippet your provider gives you in an HTML
+file and point `ANALYTICS_SNIPPET_FILE` at it. Its contents are inserted as-is
+just before `</head>`. Leave the variable unset to build without analytics.
