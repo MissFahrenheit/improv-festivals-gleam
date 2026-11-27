@@ -361,7 +361,16 @@ fn footer() -> element.Element(types.Msg) {
         ],
         [html.text("GitHub")],
       ),
-      html.text(", fork it, go wild."),
+      html.text(", fork it, go wild. Built with 🍦 by "),
+      html.a(
+        [
+          attr.href("https://www.radical-elements.com/"),
+          attr.target("_blank"),
+          attr.title("Radical Elements website"),
+        ],
+        [html.text("Radical Elements")],
+      ),
+      html.text("."),
     ]),
   ])
 }
